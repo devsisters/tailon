@@ -65,6 +65,7 @@ def parseconfig(cfg):
         'commands': raw_config.get('commands', ['tail', 'grep', 'awk']),
         'allow-transfers': raw_config.get('allow-transfers', False),
         'relative-root':   raw_config.get('relative-root', '/'),
+        'json-pretty-print': raw_config.get('json-pretty-print', False),
     }
 
     if 'files' not in raw_config or not len(raw_config['files']):
@@ -99,10 +100,11 @@ def parseopts(args=None):
 
     epilog = '''
     Example config file:
-      bind: 0.0.0.0:8080      # address and port to bind on
-      allow-transfers: true   # allow log file downloads
-      relative-root: /tailon  # web app root path (default: '')
-      commands: [tail, grep]  # allowed commands
+      bind: 0.0.0.0:8080        # address and port to bind on
+      allow-transfers: true     # allow log file downloads
+      relative-root: /tailon    # web app root path (default: '')
+      commands: [tail, grep]    # allowed commands
+      json-pretty-print: false  # use json pretty print
 
       files:
         - '/var/log/messages'
@@ -147,6 +149,11 @@ def parseopts(args=None):
         choices=Commands.names, default=['tail', 'grep', 'awk'],
         help='allowed commands (default: tail grep awk)')
 
+    group = parser.add_argument_group('User-interface options')
+    arg = group.add_argument
+    arg('-j', '--json-pretty-print', action='store_true',
+        help='use json pretty print (default: false)')
+
     return parser, parser.parse_args(args)
 
 #-----------------------------------------------------------------------------
@@ -164,6 +171,7 @@ def setup(opts):
         'allow-transfers': opts.allow_transfers,
         'relative-root': opts.__dict__.get('relative_root', ''),
         'debug': opts.__dict__.get('debug', False),
+        'json-pretty-print': opts.json_pretty_print,
     }
 
     for fn in opts.files:
